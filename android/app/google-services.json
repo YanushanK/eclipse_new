@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "151493091187",
+    "project_id": "eclipsefinal-fb5d6",
+    "storage_bucket": "eclipsefinal-fb5d6.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:151493091187:android:ff953412d6e48cd4a9af06",
+        "android_client_info": {
+          "package_name": "com.example.eclipse"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA3NNebFuHRf3H-LP7Y0LodpQ2nZWT1m9E"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

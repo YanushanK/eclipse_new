@@ -1,0 +1,49 @@
+name: eclipse
+description: A new Flutter project
+
+publish_to: 'none' # Remove this line if you're publishing your package
+
+version: 1.0.0+1
+
+environment:
+  sdk: ">=2.19.0 <3.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  carousel_slider: ^4.1.1
+  video_player: ^2.7.0
+  google_fonts: ^4.0.4
+  flutter_svg: ^2.0.7
+  flutter_animate: ^4.1.1+1
+  cupertino_icons: ^1.0.8
+  get: ^4.6.6
+  http: ^1.2.2
+  connectivity_plus: ^6.0.5
+  shared_preferences: ^2.3.2
+  geolocator: ^13.0.1
+  geocoding: ^3.0.0
+  sensors_plus: 7.0.0
+  image_picker: ^1.1.2
+  permission_handler: ^11.3.1
+  firebase_core: ^3.5.0
+  firebase_auth: ^5.3.1
+  flutter_riverpod: ^2.5.1
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^3.0.0
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/offline_products.json
+    - assets/videos/luxury_watch_video.mp4
+    - assets/images/watch1.jpg
+    - assets/images/watch2.jpg
+    - assets/images/watch3.jpg
+    - assets/images/watch4.jpg
+    - assets/images/watch5.jpg
+    - assets/images/watch6.jpg
+    - assets/images/profile.jpg

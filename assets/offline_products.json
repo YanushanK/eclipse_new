@@ -1,0 +1,11 @@
+{
+  "products": [
+    {
+      "id": 101,
+      "title": " Royal Oak",
+      "description": "Audemars Piguet classic, offline sample",
+      "price": 120000,
+      "thumbnail": "assets/images/watch1.jpg"
+    }
+  ]
+}
