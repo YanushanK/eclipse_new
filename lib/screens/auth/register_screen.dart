@@ -1,19 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
-// --- added ---
-import 'package:provider/provider.dart';
-import 'package:eclipse/providers/auth_provider.dart';
-// update the path to where your AuthProvider is
-// ----------------
 
-class RegisterScreen extends StatefulWidget {
+import 'package:eclipse/providers/auth_provider.dart';
+
+class RegisterScreen extends ConsumerStatefulWidget {
   const RegisterScreen({super.key});
 
   @override
-  State<RegisterScreen> createState() => _RegisterScreenState();
+  ConsumerState<RegisterScreen> createState() => _RegisterScreenState();
 }
 
-class _RegisterScreenState extends State<RegisterScreen> {
+class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
   final _emailController = TextEditingController();
@@ -31,13 +29,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
   }
 
   void _submitForm() async {
-
-    final auth = context.read<AuthProvider>();
-    // -----------------------------
+    final auth = ref.read(authProvider.notifier);
 
     if (_formKey.currentState?.validate() ?? false) {
       setState(() => _isLoading = true);
-
 
       final err = await auth.register(
         _emailController.text.trim(),
@@ -52,7 +47,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
           SnackBar(content: Text(err ?? 'Unknown error')),
         );
       }
-
     }
   }
 

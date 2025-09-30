@@ -1,15 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:provider/provider.dart';
+
+
 import 'package:eclipse/providers/auth_provider.dart';
 
-class LoginScreen extends StatelessWidget {
+class LoginScreen extends ConsumerWidget {
   const LoginScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
 
-    final auth = context.read<AuthProvider>();
+    final auth = ref.read(authProvider);
     final emailCtrl = TextEditingController();
     final passCtrl = TextEditingController();
     // -----------------------------
@@ -89,7 +91,7 @@ class LoginScreen extends StatelessWidget {
                   ),
                   backgroundColor: theme.colorScheme.secondary,
                 ),
-                // --- replaced body per screenshot (structure unchanged) ---
+
                 onPressed: () async {
                   final err = await auth
                       .login(emailCtrl.text.trim(), passCtrl.text.trim());

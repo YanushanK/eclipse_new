@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart'; // Riverpod import
+import 'package:shared_preferences/shared_preferences.dart';
 
-// Your screens
+
+//  screens
 import 'package:eclipse/screens/auth/login_screen.dart';
 import 'package:eclipse/screens/auth/register_screen.dart';
 import 'package:eclipse/screens/cart_screen.dart';
@@ -35,7 +37,7 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ConsumerWidget(
+    return Consumer( // Changed from ConsumerWidget
         builder: (context, ref, _) {
           final isDark = ref.watch(themeProvider);
 
