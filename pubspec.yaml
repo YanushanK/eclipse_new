@@ -29,6 +29,7 @@ dependencies:
   firebase_auth: ^5.3.1
   flutter_riverpod: ^2.5.1
   fluttertoast: ^8.2.4
+  flutter_dotenv: ^5.1.0
 
 dev_dependencies:
   flutter_test:
@@ -47,3 +48,4 @@ flutter:
     - assets/images/watch5.jpg
     - assets/images/watch6.jpg
     - assets/images/profile.jpg
+    - .env

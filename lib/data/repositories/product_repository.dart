@@ -2,22 +2,25 @@ import 'dart:convert';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:http/http.dart' as http;
 import 'package:eclipse/data/models/product.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class ProductRepository {
-  static const String watchApiToken = 'YStVvV524ZZbhvOmvgbcc7X7Bp6b69HC9fsllTsr'; // REPLACE THIS
+
+  String? get watchApiToken => dotenv.env['WATCH_API_TOKEN'];
 
   Future<List<Product>> loadProducts() async {
     print('🔍 Starting product load...');
 
     // Try Watch API first
-    if (watchApiToken != 'YStVvV524ZZbhvOmvgbcc7X7Bp6b69HC9fsllTsr') {
+    if (watchApiToken != null && watchApiToken!.isNotEmpty) {
       try {
         print('🌐 Trying Watch API...');
         final uri = Uri.parse('https://api.thewatchapi.com/v1/model/search').replace(
           queryParameters: {
             'api_token': watchApiToken,
-            'search': 'rolex',
-            'case_material': 'steel',
+            'search': 'omega speedmaster professional',
+            'reference_number': '310.30.42.50.01.001',
+            'limit': '3',
           },
         );
 
@@ -30,11 +33,16 @@ class ProductRepository {
           final list = (data['data'] as List).cast<Map<String, dynamic>>();
 
           print('✅ Watch API success! Got ${list.length} watches');
+          print('📦 API Response: $data');
 
           return list.map((item) => Product(
             id: item['reference_number'].hashCode,
             title: item['model'] ?? 'Unknown Model',
-            description: (item['description'] ?? '').toString().substring(0, 200),
+            description: (item['description'] != null && item['description'].toString().isNotEmpty)
+                ? (item['description'].toString().length > 200
+                ? item['description'].toString().substring(0, 200)
+                : item['description'].toString())
+                : 'No description available',  // ← Handle null description
             price: 25000,
             brand: item['brand'],
             thumbnail: 'https://via.placeholder.com/400x400?text=${Uri.encodeComponent(item['brand'] ?? '')}',

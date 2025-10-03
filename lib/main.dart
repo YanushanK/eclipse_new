@@ -3,6 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 
 
@@ -27,6 +28,7 @@ import 'providers/theme_provider.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(); // Initialize Firebase
+  await dotenv.load(fileName: ".env");
   runApp(
     const ProviderScope( // Wrap the app with ProviderScope for Riverpod
       child: MyApp(),
@@ -204,3 +206,4 @@ class AuthWrapper extends StatelessWidget {
     return const LoginScreen(); // You could pass isDarkMode/onToggleTheme here too if needed.
   }
 }
+
