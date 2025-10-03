@@ -1,12 +1,15 @@
 // lib/screens/product_detail_screen.dart
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:eclipse/data/models/product.dart';
+import 'package:eclipse/providers/cart_provider.dart';
+import 'package:eclipse/models/cart_item.dart';
 
-class ProductDetailScreen extends StatelessWidget {
+class ProductDetailScreen extends ConsumerWidget {
   const ProductDetailScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final args = ModalRoute.of(context)?.settings.arguments;
     final Product p = (args is Product)
         ? args
@@ -56,9 +59,33 @@ class ProductDetailScreen extends StatelessWidget {
           _buildDetailRow('Material', p.material ?? '-'),
           const SizedBox(height: 24),
           FilledButton(
-            onPressed: () => ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Added to cart (hook up later)')),
-            ),
+            onPressed: () {
+              // Create cart item from product
+              final cartItem = CartItem(
+                id: p.id.toString(),
+                name: p.title,
+                brand: p.brand ?? 'Unknown',
+                price: p.price.toDouble(),
+                imageUrl: p.thumbnail.isNotEmpty
+                    ? p.thumbnail
+                    : (p.images.isNotEmpty ? p.images.first : ''),
+              );
+
+              // Add to cart
+              ref.read(cartProvider.notifier).addItem(cartItem);
+
+              // Show success message
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text('${p.title} added to cart'),
+                  action: SnackBarAction(
+                    label: 'VIEW CART',
+                    onPressed: () => Navigator.pushNamed(context, '/cart'),
+                  ),
+                  duration: const Duration(seconds: 2),
+                ),
+              );
+            },
             child: const Text('Add to Cart'),
           ),
         ],

@@ -1,44 +1,83 @@
 import 'dart:convert';
-import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:eclipse/models/cart_item.dart';
 
-class CartProvider extends ChangeNotifier {
-  final List<Map<String, dynamic>> _items = [];
-  List<Map<String, dynamic>> get items => List.unmodifiable(_items);
-
-  void add(Map<String, dynamic> p) {
-    final idx = _items.indexWhere((e) => e['id'] == p['id']);
-    if (idx >= 0) {
-      _items[idx]['quantity'] = (_items[idx]['quantity'] ?? 1) + 1;
-    } else {
-      _items.add({...p, 'quantity': 1});
-    }
-    notifyListeners();
-    saveToPrefs();
+class CartNotifier extends StateNotifier<List<CartItem>> {
+  CartNotifier() : super([]) {
+    _loadFromPrefs();
   }
 
-  void remove(int id) {
-    _items.removeWhere((e) => e['id'] == id);
-    notifyListeners();
-    saveToPrefs();
-  }
-
-  double get total => _items.fold(0.0, (sum, e) => sum + (e['price'] as num) * (e['quantity'] ?? 1));
-
-  Future<void> loadFromPrefs() async {
-    final p = await SharedPreferences.getInstance();
-    final raw = p.getString('cart');
+  Future<void> _loadFromPrefs() async {
+    final prefs = await SharedPreferences.getInstance();
+    final raw = prefs.getString('cart');
     if (raw != null) {
       final list = jsonDecode(raw) as List;
-      _items
-        ..clear()
-        ..addAll(list.map((e) => Map<String, dynamic>.from(e)));
-      notifyListeners();
+      state = list.map((e) => CartItem.fromJson(e)).toList();
     }
   }
 
-  Future<void> saveToPrefs() async {
-    final p = await SharedPreferences.getInstance();
-    await p.setString('cart', jsonEncode(_items));
+  Future<void> _saveToPrefs() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('cart', jsonEncode(state.map((e) => e.toJson()).toList()));
   }
+
+  void addItem(CartItem item) {
+    final index = state.indexWhere((e) => e.id == item.id);
+    if (index >= 0) {
+      state[index].quantity++;
+      state = [...state]; // Trigger rebuild
+    } else {
+      state = [...state, item];
+    }
+    _saveToPrefs();
+  }
+
+  void removeItem(String id) {
+    state = state.where((item) => item.id != id).toList();
+    _saveToPrefs();
+  }
+
+  void updateQuantity(String id, int quantity) {
+    final index = state.indexWhere((e) => e.id == id);
+    if (index >= 0) {
+      if (quantity <= 0) {
+        removeItem(id);
+      } else {
+        state[index].quantity = quantity;
+        state = [...state];
+        _saveToPrefs();
+      }
+    }
+  }
+
+  void clear() {
+    state = [];
+    _saveToPrefs();
+  }
+
+  double get subtotal => state.fold(0.0, (sum, item) => sum + item.totalPrice);
+  double get tax => subtotal * 0.1; // 10% tax
+  double get shipping => 0.0; // Free shipping
+  double get total => subtotal + tax + shipping;
 }
+
+final cartProvider = StateNotifierProvider<CartNotifier, List<CartItem>>((ref) {
+  return CartNotifier();
+});
+
+// Computed providers
+final cartSubtotalProvider = Provider<double>((ref) {
+  return ref.watch(cartProvider).fold(0.0, (sum, item) => sum + item.totalPrice);
+});
+
+final cartTaxProvider = Provider<double>((ref) {
+  final subtotal = ref.watch(cartSubtotalProvider);
+  return subtotal * 0.1;
+});
+
+final cartTotalProvider = Provider<double>((ref) {
+  final subtotal = ref.watch(cartSubtotalProvider);
+  final tax = ref.watch(cartTaxProvider);
+  return subtotal + tax;
+});

@@ -1,8 +1,7 @@
 name: eclipse
 description: A new Flutter project
 
-publish_to: 'none' # Remove this line if you're publishing your package
-
+publish_to: 'none'
 version: 1.0.0+1
 
 environment:
@@ -29,6 +28,7 @@ dependencies:
   firebase_core: ^3.5.0
   firebase_auth: ^5.3.1
   flutter_riverpod: ^2.5.1
+  fluttertoast: ^8.2.4
 
 dev_dependencies:
   flutter_test:

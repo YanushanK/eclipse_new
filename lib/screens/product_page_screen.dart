@@ -1,4 +1,3 @@
-// lib/screens/product_page_screen.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:eclipse/data/models/product.dart';
@@ -17,11 +16,24 @@ class ProductPageScreen extends ConsumerWidget {
       ),
       error: (e, st) => Scaffold(
         appBar: AppBar(title: const Text('Products')),
-        body: Center(child: Text('Failed to load products: $e')),
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(Icons.error_outline, size: 60, color: Colors.red),
+              const SizedBox(height: 16),
+              Text('Failed to load products'),
+              const SizedBox(height: 8),
+              Text('$e', style: TextStyle(fontSize: 12, color: Colors.grey)),
+            ],
+          ),
+        ),
       ),
       data: (products) => Scaffold(
         appBar: AppBar(title: const Text('Products')),
-        body: GridView.builder(
+        body: products.isEmpty
+            ? const Center(child: Text('No products available'))
+            : GridView.builder(
           padding: const EdgeInsets.all(12),
           gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
             crossAxisCount: 2,
@@ -56,21 +68,39 @@ class _ProductCard extends StatelessWidget {
                   ? Image.network(
                 product.thumbnail,
                 fit: BoxFit.cover,
-                errorBuilder: (_, __, ___) => const Icon(Icons.watch),
+                errorBuilder: (_, __, ___) => Container(
+                  color: Colors.grey[300],
+                  child: const Icon(Icons.watch, size: 40),
+                ),
               )
-                  : const Icon(Icons.watch),
+                  : Container(
+                color: Colors.grey[300],
+                child: const Icon(Icons.watch, size: 40),
+              ),
             ),
             Padding(
               padding: const EdgeInsets.all(8),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(product.title, maxLines: 1,
-                      overflow: TextOverflow.ellipsis),
+                  Text(
+                    product.title,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(fontWeight: FontWeight.w600),
+                  ),
                   if (product.brand != null)
-                    Text(product.brand!, style: const TextStyle(
-                        fontSize: 12, color: Colors.grey)),
-                  Text('\$${product.price}'),
+                    Text(
+                      product.brand!,
+                      style: const TextStyle(fontSize: 12, color: Colors.grey),
+                    ),
+                  Text(
+                    '\$${product.price}',
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 14,
+                    ),
+                  ),
                 ],
               ),
             ),

@@ -1,42 +1,20 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../widgets/bottom_navigation_bar.dart';
+import 'package:eclipse/providers/cart_provider.dart';
+import 'package:eclipse/widgets/bottom_navigation_bar.dart';
 
-class CartScreen extends StatefulWidget {
+class CartScreen extends ConsumerWidget {
   const CartScreen({super.key});
 
   @override
-  State<CartScreen> createState() => _CartScreenState();
-}
-
-class _CartScreenState extends State<CartScreen> {
-  final List<Map<String, dynamic>> cartItems = [
-    {
-      'id': '1',
-      'name': 'Royal Oak Perpetual',
-      'brand': 'Audemars Piguet',
-      'price': 125000,
-      'image': 'assets/images/watch1.jpg',
-      'quantity': 1,
-    },
-    {
-      'id': '4',
-      'name': 'Nautilus 5711',
-      'brand': 'Patek Philippe',
-      'price': 95000,
-      'image': 'assets/images/watch4.jpg',
-      'quantity': 1,
-    },
-  ];
-
-  double get totalPrice {
-    return cartItems.fold(
-        0, (sum, item) => sum + (item['price'] * item['quantity']));
-  }
-
-  @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
+    final cartItems = ref.watch(cartProvider);
+    final subtotal = ref.watch(cartSubtotalProvider);
+    final tax = ref.watch(cartTaxProvider);
+    final total = ref.watch(cartTotalProvider);
+
     return Scaffold(
       appBar: AppBar(
         title: Text(
@@ -44,8 +22,63 @@ class _CartScreenState extends State<CartScreen> {
           style: GoogleFonts.playfairDisplay(),
         ),
         centerTitle: true,
+        actions: [
+          if (cartItems.isNotEmpty)
+            IconButton(
+              icon: const Icon(Icons.delete_sweep),
+              onPressed: () {
+                showDialog(
+                  context: context,
+                  builder: (context) => AlertDialog(
+                    title: const Text('Clear Cart'),
+                    content: const Text('Remove all items from cart?'),
+                    actions: [
+                      TextButton(
+                        onPressed: () => Navigator.pop(context),
+                        child: const Text('Cancel'),
+                      ),
+                      TextButton(
+                        onPressed: () {
+                          ref.read(cartProvider.notifier).clear();
+                          Navigator.pop(context);
+                        },
+                        child: const Text('Clear'),
+                      ),
+                    ],
+                  ),
+                );
+              },
+              tooltip: 'Clear cart',
+            ),
+        ],
       ),
-      body: Column(
+      body: cartItems.isEmpty
+          ? Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.shopping_cart_outlined,
+              size: 80,
+              color: Colors.grey[400],
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'Your cart is empty',
+              style: GoogleFonts.playfairDisplay(
+                fontSize: 20,
+                color: Colors.grey[600],
+              ),
+            ),
+            const SizedBox(height: 24),
+            ElevatedButton(
+              onPressed: () => Navigator.pushNamed(context, '/products'),
+              child: const Text('Browse Products'),
+            ),
+          ],
+        ),
+      )
+          : Column(
         children: [
           Expanded(
             child: ListView.builder(
@@ -54,7 +87,7 @@ class _CartScreenState extends State<CartScreen> {
               itemBuilder: (context, index) {
                 final item = cartItems[index];
                 return Dismissible(
-                  key: Key(item['id']),
+                  key: Key(item.id),
                   background: Container(
                     margin: const EdgeInsets.only(bottom: 16),
                     decoration: BoxDecoration(
@@ -66,12 +99,10 @@ class _CartScreenState extends State<CartScreen> {
                     child: const Icon(Icons.delete, color: Colors.white),
                   ),
                   onDismissed: (direction) {
-                    setState(() {
-                      cartItems.removeAt(index);
-                    });
+                    ref.read(cartProvider.notifier).removeItem(item.id);
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
-                        content: Text('${item['name']} removed from cart'),
+                        content: Text('${item.name} removed from cart'),
                       ),
                     );
                   },
@@ -95,11 +126,24 @@ class _CartScreenState extends State<CartScreen> {
                             topLeft: Radius.circular(12),
                             bottomLeft: Radius.circular(12),
                           ),
-                          child: Image.asset(
-                            item['image'],
+                          child: item.imageUrl.startsWith('assets/')
+                              ? Image.asset(
+                            item.imageUrl,
                             width: 100,
                             height: 100,
                             fit: BoxFit.cover,
+                          )
+                              : Image.network(
+                            item.imageUrl,
+                            width: 100,
+                            height: 100,
+                            fit: BoxFit.cover,
+                            errorBuilder: (_, __, ___) => Container(
+                              width: 100,
+                              height: 100,
+                              color: Colors.grey[300],
+                              child: const Icon(Icons.watch),
+                            ),
                           ),
                         ),
                         Expanded(
@@ -109,7 +153,7 @@ class _CartScreenState extends State<CartScreen> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  item['brand'],
+                                  item.brand,
                                   style: GoogleFonts.raleway(
                                     fontSize: 12,
                                     fontWeight: FontWeight.bold,
@@ -118,15 +162,17 @@ class _CartScreenState extends State<CartScreen> {
                                 ),
                                 const SizedBox(height: 4),
                                 Text(
-                                  item['name'],
+                                  item.name,
                                   style: GoogleFonts.playfairDisplay(
                                     fontSize: 16,
                                     fontWeight: FontWeight.bold,
                                   ),
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
                                 ),
                                 const SizedBox(height: 8),
                                 Text(
-                                  '\$${item['price'].toString()}',
+                                  '\$${item.price.toStringAsFixed(2)}',
                                   style: GoogleFonts.raleway(
                                     fontSize: 14,
                                     fontWeight: FontWeight.bold,
@@ -139,26 +185,33 @@ class _CartScreenState extends State<CartScreen> {
                         Column(
                           children: [
                             IconButton(
-                              icon: const Icon(Icons.remove),
-                              onPressed: () {
-                                setState(() {
-                                  if (item['quantity'] > 1) {
-                                    item['quantity']--;
-                                  }
-                                });
-                              },
-                            ),
-                            Text(item['quantity'].toString()),
-                            IconButton(
                               icon: const Icon(Icons.add),
                               onPressed: () {
-                                setState(() {
-                                  item['quantity']++;
-                                });
+                                ref.read(cartProvider.notifier).updateQuantity(
+                                  item.id,
+                                  item.quantity + 1,
+                                );
+                              },
+                            ),
+                            Text(
+                              item.quantity.toString(),
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 16,
+                              ),
+                            ),
+                            IconButton(
+                              icon: const Icon(Icons.remove),
+                              onPressed: () {
+                                ref.read(cartProvider.notifier).updateQuantity(
+                                  item.id,
+                                  item.quantity - 1,
+                                );
                               },
                             ),
                           ],
                         ),
+                        const SizedBox(width: 8),
                       ],
                     ),
                   ),
@@ -186,13 +239,31 @@ class _CartScreenState extends State<CartScreen> {
                     Text(
                       'Subtotal',
                       style: GoogleFonts.raleway(
-                        fontWeight: FontWeight.bold,
+                        fontWeight: FontWeight.w500,
                       ),
                     ),
                     Text(
-                      '\$${totalPrice.toStringAsFixed(2)}',
+                      '\$${subtotal.toStringAsFixed(2)}',
                       style: GoogleFonts.raleway(
-                        fontWeight: FontWeight.bold,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      'Tax (10%)',
+                      style: GoogleFonts.raleway(
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    Text(
+                      '\$${tax.toStringAsFixed(2)}',
+                      style: GoogleFonts.raleway(
+                        fontWeight: FontWeight.w500,
                       ),
                     ),
                   ],
@@ -204,18 +275,19 @@ class _CartScreenState extends State<CartScreen> {
                     Text(
                       'Shipping',
                       style: GoogleFonts.raleway(
-                        fontWeight: FontWeight.bold,
+                        fontWeight: FontWeight.w500,
                       ),
                     ),
                     Text(
-                      '\$0.00',
+                      'FREE',
                       style: GoogleFonts.raleway(
                         fontWeight: FontWeight.bold,
+                        color: Colors.green,
                       ),
                     ),
                   ],
                 ),
-                const SizedBox(height: 8),
+                const Divider(height: 24),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
@@ -223,14 +295,15 @@ class _CartScreenState extends State<CartScreen> {
                       'Total',
                       style: GoogleFonts.raleway(
                         fontWeight: FontWeight.bold,
-                        fontSize: 16,
+                        fontSize: 18,
                       ),
                     ),
                     Text(
-                      '\$${totalPrice.toStringAsFixed(2)}',
+                      '\$${total.toStringAsFixed(2)}',
                       style: GoogleFonts.raleway(
                         fontWeight: FontWeight.bold,
-                        fontSize: 16,
+                        fontSize: 18,
+                        color: theme.colorScheme.secondary,
                       ),
                     ),
                   ],

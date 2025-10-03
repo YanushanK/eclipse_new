@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart'; // Riverpod import
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
 
 
 //  screens
@@ -19,8 +20,9 @@ import 'package:eclipse/screens/profile_screen.dart';
 import 'providers/auth_provider.dart';
 import 'providers/products_provider.dart';
 import 'providers/cart_provider.dart';
-import 'providers/connectivity_provider.dart';
+import 'package:eclipse/services/connectivity_service.dart';
 import 'providers/theme_provider.dart';
+
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -34,12 +36,17 @@ void main() async {
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
-
   @override
   Widget build(BuildContext context) {
-    return Consumer( // Changed from ConsumerWidget
+    return Consumer(
         builder: (context, ref, _) {
           final isDark = ref.watch(themeProvider);
+
+          // Initialize connectivity service
+          ref.read(connectivityServiceProvider);
+
+          // Watch connectivity status
+          final isOnline = ref.watch(isOnlineProvider);
 
           return MaterialApp(
             debugShowCheckedModeBanner: false,
@@ -52,6 +59,56 @@ class MyApp extends StatelessWidget {
               textTheme: GoogleFonts.playfairDisplayTextTheme(),
               useMaterial3: true,
             ),
+
+            // Add offline banner
+            builder: (context, child) {
+              return Stack(
+                children: [
+                  child ?? const SizedBox.shrink(),
+
+                  // Offline Banner
+                  if (!isOnline)
+                    Positioned(
+                      top: 0,
+                      left: 0,
+                      right: 0,
+                      child: Material(
+                        color: Colors.red,
+                        elevation: 4,
+                        child: SafeArea(
+                          bottom: false,
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                              vertical: 8,
+                              horizontal: 16,
+                            ),
+                            child: const Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(
+                                  Icons.wifi_off,
+                                  color: Colors.white,
+                                  size: 16,
+                                ),
+                                SizedBox(width: 8),
+                                Text(
+                                  'No Internet Connection',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.w500,
+                                    fontSize: 14,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                ],
+              );
+            },
+
             initialRoute: '/login',
             routes: {
               '/login': (_) => const LoginScreen(),
