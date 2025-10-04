@@ -36,7 +36,6 @@ class _PaymentScreenState extends ConsumerState<PaymentScreen> {
   @override
   void initState() {
     super.initState();
-
   }
 
   @override
@@ -84,7 +83,9 @@ class _PaymentScreenState extends ConsumerState<PaymentScreen> {
 
     try {
       final total = ref.read(cartTotalProvider);
-      final orderId = 'ORD${DateTime.now().millisecondsSinceEpoch}';
+      final orderId = 'ORD${DateTime
+          .now()
+          .millisecondsSinceEpoch}';
 
       final paymentService = ref.read(paymentServiceProvider);
       final result = await paymentService.processPayment(
@@ -160,11 +161,13 @@ class _PaymentScreenState extends ConsumerState<PaymentScreen> {
                         ),
                       ),
                       const Divider(),
-                      _buildSummaryRow('Subtotal', subtotal),
-                      _buildSummaryRow('Tax (10%)', tax),
-                      _buildSummaryRow('Shipping', 0, isFree: true),
+                      _buildSummaryRow('Subtotal', subtotal, theme: theme),
+                      _buildSummaryRow('Tax (10%)', tax, theme: theme),
+                      _buildSummaryRow(
+                          'Shipping', 0, isFree: true, theme: theme),
                       const Divider(),
-                      _buildSummaryRow('Total', total, isTotal: true, theme: theme),
+                      _buildSummaryRow(
+                          'Total', total, isTotal: true, theme: theme),
                     ],
                   ),
                 ),
@@ -190,8 +193,11 @@ class _PaymentScreenState extends ConsumerState<PaymentScreen> {
                       height: 20,
                       child: CircularProgressIndicator(strokeWidth: 2),
                     )
-                        : Icon(Icons.my_location, color: theme.colorScheme.secondary),
-                    onPressed: _isFetchingLocation ? null : _fetchCurrentLocation,
+                        : Icon(
+                        Icons.my_location, color: theme.colorScheme.secondary),
+                    onPressed: _isFetchingLocation
+                        ? null
+                        : _fetchCurrentLocation,
                     tooltip: 'Autofill from GPS',
                   ),
                 ],
@@ -383,7 +389,7 @@ class _PaymentScreenState extends ConsumerState<PaymentScreen> {
                   child: _isProcessing
                       ? const CircularProgressIndicator(color: Colors.white)
                       : Text(
-                    'PAY \${total.toStringAsFixed(2)}',
+                    'PAY ${total.toStringAsFixed(2)}',
                     style: GoogleFonts.raleway(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
@@ -392,7 +398,6 @@ class _PaymentScreenState extends ConsumerState<PaymentScreen> {
                   ),
                 ),
               ),
-
               const SizedBox(height: 16),
 
               // Security Notice
@@ -418,13 +423,14 @@ class _PaymentScreenState extends ConsumerState<PaymentScreen> {
     );
   }
 
-  Widget _buildSummaryRow(
-      String label,
+  Widget _buildSummaryRow(String label,
       double amount, {
         bool isFree = false,
         bool isTotal = false,
-        ThemeData? theme,
+        required ThemeData theme,
       }) {
+    final displayText = isFree ? 'FREE' : '\$${amount.toStringAsFixed(2)}';
+
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4),
       child: Row(
@@ -438,14 +444,14 @@ class _PaymentScreenState extends ConsumerState<PaymentScreen> {
             ),
           ),
           Text(
-            isFree ? 'FREE' : '\${amount.toStringAsFixed(2)}',
+            displayText,
             style: GoogleFonts.raleway(
               fontWeight: isTotal ? FontWeight.bold : FontWeight.w500,
               fontSize: isTotal ? 16 : 14,
               color: isFree
                   ? Colors.green
                   : isTotal
-                  ? theme?.colorScheme.secondary
+                  ? theme.colorScheme.secondary
                   : null,
             ),
           ),

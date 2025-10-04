@@ -8,7 +8,7 @@ import 'package:google_fonts/google_fonts.dart';
 
 import 'package:eclipse/services/storage_service.dart';
 import 'package:eclipse/providers/auth_provider.dart';
-import '../widgets/bottom_navigation_bar.dart'; // TODO: connect if you use a custom bottom nav
+import '../widgets/bottom_navigation_bar.dart';
 
 /// Holds the current profile image URL for the session.
 final profileImageProvider = StateProvider<String?>((ref) => null);
@@ -150,6 +150,58 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     }
   }
 
+  /// Logout confirmation dialog
+  Future<void> _showLogoutDialog() async {
+    if (!mounted) return;
+    return showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Logout'),
+        content: const Text('Are you sure you want to logout?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.pop(context);
+              _performLogout();
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.red,
+            ),
+            child: const Text('Logout'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Perform logout
+  Future<void> _performLogout() async {
+    try {
+      // Sign out from Firebase
+      await ref.read(authProvider.notifier).logout();
+
+      // Clear profile image
+      ref.read(profileImageProvider.notifier).state = null;
+
+      // Navigate to login and remove all previous routes
+      if (mounted) {
+        Navigator.pushNamedAndRemoveUntil(
+          context,
+          '/login',
+              (route) => false,
+        );
+      }
+
+      _showToast('Logged out successfully');
+    } catch (e) {
+      _showToast('Logout failed: $e', isError: true);
+    }
+  }
+
   void _showToast(String message, {bool isError = false}) {
     Fluttertoast.showToast(
       msg: message,
@@ -170,8 +222,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         title: const Text('Profile'),
         centerTitle: true,
       ),
-      // TODO: if you have a custom bottom nav widget, add it here:
-      // bottomNavigationBar: const CustomBottomNavigationBar(currentIndex: 3),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(24.0),
         child: Column(
@@ -257,7 +307,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
 
             const SizedBox(height: 16),
 
-            // Theme toggle (keeps your original API)
+            // Theme toggle
             Card(
               child: SwitchListTile(
                 secondary: const Icon(Icons.color_lens),
@@ -267,6 +317,32 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 ),
                 value: widget.isDarkMode,
                 onChanged: (_) => widget.onToggleTheme(),
+              ),
+            ),
+
+            const SizedBox(height: 16),
+
+            // Logout Button
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton.icon(
+                style: ElevatedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  backgroundColor: Colors.red,
+                  foregroundColor: Colors.white,
+                ),
+                onPressed: _showLogoutDialog,
+                icon: const Icon(Icons.logout),
+                label: Text(
+                  'LOGOUT',
+                  style: GoogleFonts.raleway(
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: 1,
+                  ),
+                ),
               ),
             ),
           ],
