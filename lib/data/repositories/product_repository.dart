@@ -18,7 +18,7 @@ class ProductRepository {
         final uri = Uri.parse('https://api.thewatchapi.com/v1/model/search').replace(
           queryParameters: {
             'api_token': watchApiToken,
-            'search': 'omega speedmaster professional',
+            'search': 'omega speedmaster ',
             'reference_number': '310.30.42.50.01.001',
             'limit': '3',
           },
@@ -91,3 +91,14 @@ class ProductRepository {
     return match != null ? int.tryParse(match.group(1)!) : null;
   }
 }
+
+// Map reference numbers to your asset images
+String _getWatchImage(String? referenceNumber) {
+  final imageMap = {
+    '310.30.42.50.01.001': 'assets/images/watch1.jpg', // Your existing one
+    '311.30.42.30.01.005': 'assets/images/watch2.jpg', // Add this image
+    '326.30.40.50.01.001': 'assets/images/watch3.jpg', // Add this image
+  };
+  return imageMap[referenceNumber] ?? 'assets/images/watch1.jpg';
+}
+

@@ -19,21 +19,21 @@ class _HomeScreenState extends State<HomeScreen> {
       'name': 'Royal Oak Perpetual',
       'brand': 'Audemars Piguet',
       'price': '\$125,000',
-      'image': 'assets/images/watch1.jpg',
+      'image': 'assets/images/watch4.jpg',
     },
     {
       'id': '2',
       'name': 'Daytona Platinum',
       'brand': 'Rolex',
       'price': '\$75,000',
-      'image': 'assets/images/watch2.jpg',
+      'image': 'assets/images/watch5.jpg',
     },
     {
       'id': '3',
       'name': 'Tourbillon Extra',
       'brand': 'Patek Philippe',
       'price': '\$250,000',
-      'image': 'assets/images/watch3.jpg',
+      'image': 'assets/images/watch6.jpg',
     },
   ];
 
