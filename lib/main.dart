@@ -4,6 +4,8 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'theme/app_theme.dart';
+import 'theme/theme_controller.dart';
 
 
 
@@ -30,7 +32,7 @@ void main() async {
   await Firebase.initializeApp(); // Initialize Firebase
   await dotenv.load(fileName: ".env");
   runApp(
-    const ProviderScope( // Wrap the app with ProviderScope for Riverpod
+    const ProviderScope(
       child: MyApp(),
     ),
   );
@@ -50,17 +52,12 @@ class MyApp extends StatelessWidget {
           // Watch connectivity status
           final isOnline = ref.watch(isOnlineProvider);
 
-          return MaterialApp(
+          return  MaterialApp(
             debugShowCheckedModeBanner: false,
             title: 'Eclipse',
-            theme: ThemeData(
-              colorScheme: ColorScheme.fromSeed(
-                seedColor: Colors.amber,
-                brightness: isDark ? Brightness.dark : Brightness.light,
-              ),
-              textTheme: GoogleFonts.playfairDisplayTextTheme(),
-              useMaterial3: true,
-            ),
+            theme: AppTheme.light,
+            darkTheme: AppTheme.dark,
+            themeMode: isDark ? ThemeMode.dark : ThemeMode.light,
 
             // Add offline banner
             builder: (context, child) {
