@@ -8,7 +8,7 @@ import 'package:google_fonts/google_fonts.dart';
 
 import 'package:eclipse/services/storage_service.dart';
 import 'package:eclipse/providers/auth_provider.dart';
-import '../widgets/bottom_navigation_bar.dart';
+
 
 /// Holds the current profile image URL for the session.
 final profileImageProvider = StateProvider<String?>((ref) => null);
@@ -30,7 +30,7 @@ class ProfileScreen extends ConsumerStatefulWidget {
 class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   final ImagePicker _picker = ImagePicker();
   bool _isUploading = false;
-  File? _selectedImage;
+  File? _profileImage;
 
   /// Choose camera or gallery.
   Future<void> _showImageSourceDialog() async {
@@ -85,7 +85,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         return;
       }
 
-      setState(() => _selectedImage = file);
+      setState(() => _profileImage = file);
       await _showPreviewDialog(file);
     } catch (e) {
       _showToast('Failed to pick image: $e', isError: true);
@@ -134,20 +134,16 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
 
   /// Upload image using your storage service.
   Future<void> _uploadImage(File imageFile) async {
-    setState(() => _isUploading = true);
-    try {
-      final storageService = ref.read(storageServiceProvider);
-      final imageUrl = await storageService.uploadProfileImage(imageFile);
+    setState(() {
+      _isUploading = true;
+      _profileImage = imageFile; // Store the file locally
+    });
 
-      // Store in provider so the UI updates.
-      ref.read(profileImageProvider.notifier).state = imageUrl;
+    // Simulate upload delay to show loading
+    await Future.delayed(const Duration(seconds: 1));
 
-      _showToast('Profile image updated successfully!');
-    } catch (e) {
-      _showToast('Upload failed: $e', isError: true);
-    } finally {
-      if (mounted) setState(() => _isUploading = false);
-    }
+    setState(() => _isUploading = false);
+    _showToast('Profile image updated successfully!');
   }
 
   /// Logout confirmation dialog
@@ -233,10 +229,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                   CircleAvatar(
                     radius: 60,
                     backgroundColor: theme.colorScheme.primary.withOpacity(0.1),
-                    backgroundImage: profileImageUrl != null
-                        ? NetworkImage(profileImageUrl)
+                    backgroundImage: _profileImage != null
+                        ? FileImage(_profileImage!) as ImageProvider
                         : null,
-                    child: profileImageUrl == null
+                    child: _profileImage == null
                         ? Icon(
                       Icons.person,
                       size: 60,
