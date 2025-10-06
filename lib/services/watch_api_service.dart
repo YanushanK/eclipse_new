@@ -9,7 +9,7 @@ final watchApiServiceProvider = Provider<WatchApiService>((ref) {
 
 class WatchApiService {
   static const String baseUrl = 'https://api.thewatchapi.com/v1';
-  static const String apiToken = 'YStVvV524ZZbhvOmvgbcc7X7Bp6b69HC9fsllTsr'; // Replace with your token
+  static const String apiToken = 'YStVvV524ZZbhvOmvgbcc7X7Bp6b69HC9fsllTsr';
 
   /// Search for watch models
   Future<List<WatchProduct>> searchModels({
