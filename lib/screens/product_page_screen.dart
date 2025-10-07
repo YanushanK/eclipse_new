@@ -65,7 +65,8 @@ class _ProductCard extends StatelessWidget {
           children: [
             Expanded(
               child: product.thumbnail.isNotEmpty
-                  ? Image.network(
+                  ? (product.thumbnail.startsWith('assets/')
+                  ? Image.asset(
                 product.thumbnail,
                 fit: BoxFit.cover,
                 errorBuilder: (_, __, ___) => Container(
@@ -73,6 +74,14 @@ class _ProductCard extends StatelessWidget {
                   child: const Icon(Icons.watch, size: 40),
                 ),
               )
+                  : Image.network(
+                product.thumbnail,
+                fit: BoxFit.cover,
+                errorBuilder: (_, __, ___) => Container(
+                  color: Colors.grey[300],
+                  child: const Icon(Icons.watch, size: 40),
+                ),
+              ))
                   : Container(
                 color: Colors.grey[300],
                 child: const Icon(Icons.watch, size: 40),

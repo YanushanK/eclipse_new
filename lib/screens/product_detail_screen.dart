@@ -30,17 +30,29 @@ class ProductDetailScreen extends ConsumerWidget {
           AspectRatio(
             aspectRatio: 16 / 10,
             child: p.images.isNotEmpty
-                ? Image.network(
+                ? (p.images.first.startsWith('assets/')
+                ? Image.asset(
               p.images.first,
               fit: BoxFit.cover,
               errorBuilder: (_, __, ___) => const Icon(Icons.watch),
             )
+                : Image.network(
+              p.images.first,
+              fit: BoxFit.cover,
+              errorBuilder: (_, __, ___) => const Icon(Icons.watch),
+            ))
                 : (p.thumbnail.isNotEmpty
-                ? Image.network(
+                ? (p.thumbnail.startsWith('assets/')
+                ? Image.asset(
               p.thumbnail,
               fit: BoxFit.cover,
               errorBuilder: (_, __, ___) => const Icon(Icons.watch),
             )
+                : Image.network(
+              p.thumbnail,
+              fit: BoxFit.cover,
+              errorBuilder: (_, __, ___) => const Icon(Icons.watch),
+            ))
                 : const Icon(Icons.watch)),
           ),
           const SizedBox(height: 16),

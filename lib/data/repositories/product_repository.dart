@@ -20,6 +20,7 @@ class ProductRepository {
             'api_token': watchApiToken,
             'search': 'omega speedmaster ',
             'reference_number': '310.30.42.50.01.001',
+
             'limit': '3',
           },
         );
@@ -42,11 +43,11 @@ class ProductRepository {
                 ? (item['description'].toString().length > 200
                 ? item['description'].toString().substring(0, 200)
                 : item['description'].toString())
-                : 'No description available',  // ← Handle null description
+                : 'No description available',
             price: 25000,
             brand: item['brand'],
-            thumbnail: 'https://via.placeholder.com/400x400?text=${Uri.encodeComponent(item['brand'] ?? '')}',
-            images: ['https://via.placeholder.com/800x600?text=${Uri.encodeComponent(item['brand'] ?? '')}'],
+            thumbnail: _getWatchImage(item['reference_number']),
+            images: [_getWatchImage(item['reference_number'])],
             availability: 'In Stock',
             year: _extractYear(item['year_of_production']),
             caseSize: item['case_diameter'],
@@ -90,15 +91,14 @@ class ProductRepository {
     final match = RegExp(r'(\d{4})').firstMatch(yearRange);
     return match != null ? int.tryParse(match.group(1)!) : null;
   }
-}
 
-// Map reference numbers to your asset images
-String _getWatchImage(String? referenceNumber) {
-  final imageMap = {
-    '310.30.42.50.01.001': 'assets/images/watch1.jpg', // Your existing one
-    '311.30.42.30.01.005': 'assets/images/watch2.jpg', // Add this image
-    '326.30.40.50.01.001': 'assets/images/watch3.jpg', // Add this image
-  };
-  return imageMap[referenceNumber] ?? 'assets/images/watch1.jpg';
-}
 
+  String _getWatchImage(String? referenceNumber) {
+    final imageMap = {
+      '310.30.42.50.01.001': 'assets/images/watch1.jpg',
+      '311.30.42.30.01.005': 'assets/images/watch2.jpg',
+      '326.30.40.50.01.001': 'assets/images/watch3.jpg',
+    };
+    return imageMap[referenceNumber] ?? 'assets/images/watch1.jpg';
+  }
+}
